@@ -4,6 +4,8 @@ import Auth from './pages/auth'
 import CreateRoom from './pages/createRoom'
 import Room from './pages/room'
 import RootLayout from './Layout/rootLayout';
+import './App.css';
+import { ThemeProvider } from './components/theme-provider'
 
 const App = () => {
 
@@ -31,7 +33,9 @@ const App = () => {
 
   return (
     <>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <RouterProvider router={router} />
+    </ThemeProvider>
     </>
   )
 }
