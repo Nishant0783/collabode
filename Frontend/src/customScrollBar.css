@@ -1,0 +1,42 @@
+/* WebKit Browsers (Chrome, Safari) */
+.custom-scrollbar ::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the scrollbar for horizontal scrollbars */
+}
+
+.custom-scrollbar ::-webkit-scrollbar-track {
+  background: transparent; /* No background for the track */
+}
+
+.custom-scrollbar ::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.7); /* Dark color for the thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Makes the scrollbar thin */
+  scrollbar-color: rgba(0, 0, 0, 0.7) transparent; /* Dark color for the thumb and no background for the track */
+}
+
+/* Optional: To apply styles to the horizontal scrollbar as well */
+.custom-scrollbar-horizontal ::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the scrollbar for horizontal scrollbars */
+}
+
+.custom-scrollbar-horizontal ::-webkit-scrollbar-track {
+  background: transparent; /* No background for the track */
+}
+
+.custom-scrollbar-horizontal ::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.7); /* Dark color for the thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+.custom-scrollbar-horizontal {
+  scrollbar-width: thin; /* Makes the scrollbar thin */
+  scrollbar-color: rgba(0, 0, 0, 0.7) transparent; /* Dark color for the thumb and no background for the track */
+}
+
+  
