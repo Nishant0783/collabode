@@ -5,10 +5,8 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { CopyIcon } from 'lucide-react';
-import { io } from 'socket.io-client';
+import socket from '@/utils/socket';
 import { useNavigate } from 'react-router-dom';
-
-const socket = io('http://localhost:5000')
 
 const CreateRoom = () => {
   const [name, setName] = useState('')
