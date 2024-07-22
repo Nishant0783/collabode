@@ -16,6 +16,8 @@ const CreateRoom = () => {
   const startRoom = () => {
     if(name !== '' && roomId !== '') {
       console.log(name, " ", roomId, " sent to backend")
+      localStorage.setItem('name', name)
+      localStorage.setItem('roomId', roomId)
       socket.emit('joinRoom', {name, roomId});
       navigate(`/room/${roomId}`)
     }

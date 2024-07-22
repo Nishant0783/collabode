@@ -1,11 +1,17 @@
 import Resizable from '@/components/Resizable/Resizable';
+import socket from '@/utils/socket';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 const Room = () => {
   const { roomId } = useParams();
-  // console.log(roomId)
+
+  useEffect(() => {
+    const name = localStorage.getItem('name')
+    socket.emit('joinRoom', ({ name, roomId }))
+  }, [roomId])
+
   return (
     <>
       <Resizable />
