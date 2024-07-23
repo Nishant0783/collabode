@@ -7,31 +7,38 @@ import { useParams } from 'react-router-dom';
 import socket from '@/utils/socket';
 
 const Sidebar = () => {
-  const [users, setUsers] = useState([]);
+  const [currUser, setCurrUser] = useState({})
   const { roomId } = useParams();
+  const [users, setUsers] = useState([])
 
   useEffect(() => {
-    // Emit getUser event when the component mounts or when roomId changes
-    if (roomId) {
-      console.log("Emitting getUser event for roomId:", roomId);
-      socket.emit('getUser', { roomId });
-    }
+    // Listening joinedUSer event to get current user
+    socket.on('joinedUser', ({ username, roomId, socketId }) => {
+      setCurrUser({
+        username,
+        roomId,
+        socketId
+      }
+      )
+    })
 
-    // Listen for the roomUsers event to get the list of users
-    socket.on('roomUsers', (users) => {
-      console.log("Received roomUsers event with users:", users);
-      setUsers(users);
-    });
+    // Emitting getuser event to get the list of all the connected users
+    socket.emit('getUser', ({ roomId }))
 
-    // Cleanup the event listener on component unmount
+    socket.on('roomUsers', ({ clients }) => {
+      setUsers(clients)
+    })
+
     return () => {
+      socket.off('joinedUser');
       socket.off('roomUsers');
     };
-  }, [roomId]);
+  }, [roomId])
 
   useEffect(() => {
-    console.log("Users are: ", users)
-  }, [users])
+    console.log("Current user is: ", currUser)
+    console.log("All users are: ", users)
+  }, [currUser, users])
 
   return (
     <div className='h-[100vh] bg-gray-500 py-[20px]'>

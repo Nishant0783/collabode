@@ -9,18 +9,13 @@ import socket from '@/utils/socket';
 import { useNavigate } from 'react-router-dom';
 
 const CreateRoom = () => {
-  const [name, setName] = useState('')
-  const [roomId, setRoomId] = useState('')
+  const [username, setUsername] = useState('');
+  const [roomId, setRoomId] = useState('');
   const navigate = useNavigate();
 
   const startRoom = () => {
-    if(name !== '' && roomId !== '') {
-      console.log(name, " ", roomId, " sent to backend")
-      localStorage.setItem('name', name)
-      localStorage.setItem('roomId', roomId)
-      socket.emit('joinRoom', {name, roomId});
-      navigate(`/room/${roomId}`)
-    }
+    socket.emit('joinRoom', ({ username, roomId }))
+    navigate(`/room/${roomId}`)
   }
 
   return (
@@ -38,8 +33,8 @@ const CreateRoom = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
-              <Label htmlFor="name">Name <span className='text-red-500'>*</span></Label>
-                <Input id="name" placeholder="Enter your name"/>
+                <Label htmlFor="name">Name <span className='text-red-500'>*</span></Label>
+                <Input id="name" placeholder="Enter your name" />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="roomId">Room ID <span className='text-red-500'>*</span></Label>
@@ -60,20 +55,28 @@ const CreateRoom = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name <span className='text-red-500'>*</span></Label>
-                <Input id="name" placeholder="Enter your name" onChange={(e) => setName(e.target.value)} value={name}/>
+                <Input id="name" placeholder="Enter your name"
+                  onChange={(e) => setUsername(e.target.value)} value={username}
+                />
               </div>
               <div className="space-y-2">
                 <div className='flex items-center gap-x-[10px]'>
                   <Label htmlFor="roomId">Room ID</Label>
-                  <CopyIcon className='w-[15px] h-[15px] cursor-pointer hover:text-blue-500'/>
+                  <CopyIcon className='w-[15px] h-[15px] cursor-pointer hover:text-blue-500' />
                 </div>
-                <Input id="roomId" placeholder="q2f-1234rt-7832gf-89" onChange={(e) => setRoomId(e.target.value)} value={roomId}/>
+                <Input id="roomId" placeholder="q2f-1234rt-7832gf-89"
+                  onChange={(e) => setRoomId(e.target.value)} value={roomId}
+                />
               </div>
             </CardContent>
             <CardFooter>
               <div className='flex justify-between w-full'>
                 <Button className="w-[150px]" variant="outline">Generate Id</Button>
-                <Button className="w-[150px]" onClick={startRoom}>Start Room</Button>
+                <Button className="w-[150px]"
+                  onClick={startRoom}
+                >
+                  Start Room
+                </Button>
               </div>
             </CardFooter>
           </Card>

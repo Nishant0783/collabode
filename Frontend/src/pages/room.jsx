@@ -7,11 +7,6 @@ import { useParams } from 'react-router-dom';
 const Room = () => {
   const { roomId } = useParams();
 
-  useEffect(() => {
-    const name = localStorage.getItem('name')
-    socket.emit('joinRoom', ({ name, roomId }))
-  }, [roomId])
-
   return (
     <>
       <Resizable />
