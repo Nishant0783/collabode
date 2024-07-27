@@ -15,6 +15,8 @@ const CreateRoom = () => {
 
   const startRoom = () => {
     socket.emit('joinRoom', ({ username, roomId }))
+    localStorage.setItem('name', username)
+    localStorage.setItem('roomId', roomId)
     navigate(`/room/${roomId}`)
   }
 

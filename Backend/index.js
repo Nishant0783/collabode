@@ -43,18 +43,21 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('roomUsers', { clients: users });
     })
 
+
     // Listeninig to getUser event to get list of all the connected user in a room
     socket.on('getUser', ({ roomId }) => {
         const socketSets = roomMap.get(roomId) || new Set()
         console.log("Socket sets: ", socketSets)
-        const users = Array.from(socketSets).map((socketId) => {
-            return usersMap.get(socketId)
-        })
+        const users = Array.from(socketSets).map((socketId) => ({
+            socketId,
+            username: usersMap.get(socketId)
+        }))
         console.log("Users are: ", users)
 
-        // Emitting the user list back to the requesting client
-        socket.emit('roomUsers', { clients: users });
+        // Emitting the user list back to the all the clients
+        io.to(roomId).emit('roomUsers', { clients: users });
     })
+
 
 
 

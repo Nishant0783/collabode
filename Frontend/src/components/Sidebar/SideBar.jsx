@@ -1,44 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { CopyIcon } from 'lucide-react';
+import { CloudCog, CopyIcon } from 'lucide-react';
 import UserBlock from '../UserBlock/UserBlock';
 import '../../customScrollBar.css'; // Make sure to import the custom CSS
 import { useParams } from 'react-router-dom';
 import socket from '@/utils/socket';
 
 const Sidebar = () => {
-  const [currUser, setCurrUser] = useState({})
+  const [currUser, setCurrUser] = useState({});
   const { roomId } = useParams();
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    // Listening joinedUSer event to get current user
+    // Listening joinedUser event to get current user
     socket.on('joinedUser', ({ username, roomId, socketId }) => {
       setCurrUser({
         username,
         roomId,
         socketId
-      }
-      )
-    })
+      });
+    });
 
-    // Emitting getuser event to get the list of all the connected users
-    socket.emit('getUser', ({ roomId }))
+    // Emitting getUser event to get the list of all the connected users
+    socket.emit('getUser', { roomId });
 
-    socket.on('roomUsers', ({ clients }) => {
-      setUsers(clients)
-    })
+    socket.on('roomUsers', ({ clients = [] }) => {
+      console.log("clients: ", clients);
+      setUsers(clients);
+    });
 
     return () => {
       socket.off('joinedUser');
       socket.off('roomUsers');
     };
-  }, [roomId])
+  }, [roomId]);
 
   useEffect(() => {
-    console.log("Current user is: ", currUser)
-    console.log("All users are: ", users)
-  }, [currUser, users])
+    console.log("Current user is: ", currUser);
+    console.log("All users are: ", users);
+  }, [currUser, users]);
 
   return (
     <div className='h-[100vh] bg-gray-500 py-[20px]'>
@@ -47,9 +47,16 @@ const Sidebar = () => {
           <div className='grid gap-x-[10px] auto-rows-max gap-y-[15px]' style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(50px, 1fr))' }}>
             {
               users.length !== 0 &&
-              users.map((user, index) => (
-                <UserBlock user={user.slice(0, 1).toUpperCase()} key={index} />
-              ))
+              users.map((user, index) => { 
+                console.log('Rendering user:', user);
+                if (user && user.username) {
+                  console.log('Username:', user.username);
+                  return <UserBlock user={user.username.slice(0, 1).toUpperCase()} key={index} />;
+                } else {
+                  console.error('User or username is undefined:', user);
+                  return null;
+                }
+              })
             }
           </div>
         </div>
