@@ -5,18 +5,21 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { CopyIcon } from 'lucide-react';
-import socket from '@/utils/socket';
 import { useNavigate } from 'react-router-dom';
 
 const CreateRoom = () => {
-  const [username, setUsername] = useState('');
-  const [roomId, setRoomId] = useState('');
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('')
+  const [roomId, setRoomId] = useState('')
+  const [error, setError] = useState('')
 
   const startRoom = () => {
-    socket.emit('joinRoom', ({ username, roomId }))
-    localStorage.setItem('name', username)
-    localStorage.setItem('roomId', roomId)
+    if(userName == '' || roomId == '') {
+      setError("Username and roomId is required")
+      return;
+    }
+    sessionStorage.setItem('userName', userName)
+    sessionStorage.setItem('roomId', roomId)
     navigate(`/room/${roomId}`)
   }
 
@@ -58,7 +61,7 @@ const CreateRoom = () => {
               <div className="space-y-2">
                 <Label htmlFor="name">Name <span className='text-red-500'>*</span></Label>
                 <Input id="name" placeholder="Enter your name"
-                  onChange={(e) => setUsername(e.target.value)} value={username}
+                  onChange={(e) => setUserName(e.target.value)} value={userName}
                 />
               </div>
               <div className="space-y-2">
@@ -83,6 +86,7 @@ const CreateRoom = () => {
             </CardFooter>
           </Card>
         </TabsContent>
+        {error !== '' && <p className='text-red-500'>{error}</p>}
       </Tabs>
     </div >
   )
