@@ -3,14 +3,20 @@ import { Button } from "@/components/ui/button";
 import { CopyIcon } from 'lucide-react';
 import UserBlock from '../UserBlock/UserBlock';
 import '../../customScrollBar.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import socket from '@/utils/socket';
 
 const Sidebar = ({ clients }) => {
   const navigate = useNavigate()
+  const {roomId} = useParams()
+
   const onLeaveRoom = () => {
     socket.emit('leaveRoom')
     navigate('/create-room')
+  }
+
+  const handleCopyRoomId = () => {
+    navigator.clipboard.writeText(roomId)
   }
 
   return (
@@ -21,7 +27,7 @@ const Sidebar = ({ clients }) => {
             {
               clients.filter(client => client && client.userName).map((client) => (
                 <UserBlock 
-                  user={client.userName.slice(0,1).toUpperCase()} 
+                  user={client.userName} 
                   key={client.socketId} 
                 />
               ))
@@ -31,7 +37,7 @@ const Sidebar = ({ clients }) => {
         <div className='flex flex-col gap-y-[10px]'>
           <hr className="h-px bg-gray-200 border-0" />
           <Button className="w-full bg-red-600 text-white hover:bg-red-700" onClick={onLeaveRoom}>Leave Room</Button>
-          <Button variant="secondary" className="w-full">Copy Room Id <CopyIcon className='w-[20px] h-[20px] ml-[10px]' /> </Button>
+          <Button variant="secondary" className="w-full" onClick={handleCopyRoomId}>Copy Room Id <CopyIcon className='w-[20px] h-[20px] ml-[10px]' /> </Button>
         </div>
       </div>
     </div>
