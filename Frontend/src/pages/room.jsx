@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Resizable from '@/components/Resizable/Resizable';
 import socket from '@/utils/socket';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Room = () => {
   const { roomId } = useParams();
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
 
   useEffect(() => {
@@ -15,16 +16,24 @@ const Room = () => {
       setClients(clients)
     })
 
-    socket.on('disconnected', ({ socketId, userName }) => {
-      setClients((prev) => prev.filter((client) => client.socketId !== socketId))
+    socket.on('userLeft', ({ socketId, userName, updatedClients }) => {
+      console.log(`${userName} has left the room`);
+      setClients(updatedClients);
     })
 
+    const handleBeforeUnload = () => {
+      socket.emit('leaveRoom');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
-      socket.off('joined')
-      socket.off("disconnected")
-      socket.disconnect()
+      socket.off('joined');
+      socket.off('userLeft');
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      socket.emit('leaveRoom');
     }
-  }, [roomId])
+  }, [roomId, navigate])
 
   return (
     <>

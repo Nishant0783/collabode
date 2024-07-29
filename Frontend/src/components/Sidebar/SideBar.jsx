@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { CopyIcon, User } from 'lucide-react';
+import { CopyIcon } from 'lucide-react';
 import UserBlock from '../UserBlock/UserBlock';
-import '../../customScrollBar.css'; // Make sure to import the custom CSS
-import { useNavigate, useParams } from 'react-router-dom';
+import '../../customScrollBar.css';
+import { useNavigate } from 'react-router-dom';
 import socket from '@/utils/socket';
 
 const Sidebar = ({ clients }) => {
   const navigate = useNavigate()
   const onLeaveRoom = () => {
+    socket.emit('leaveRoom')
     navigate('/create-room')
   }
 
@@ -18,9 +19,12 @@ const Sidebar = ({ clients }) => {
         <div className='custom-scrollbar overflow-y-auto' style={{ maxHeight: 'calc(100vh - 100px)' }}>
           <div className='grid gap-x-[10px] auto-rows-max gap-y-[15px]' style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(50px, 1fr))' }}>
             {
-              clients.map((client) => {
-                return <UserBlock user={client.userName.slice(0,1).toUpperCase()} key={client.socketId} />
-              })
+              clients.filter(client => client && client.userName).map((client) => (
+                <UserBlock 
+                  user={client.userName.slice(0,1).toUpperCase()} 
+                  key={client.socketId} 
+                />
+              ))
             }
           </div>
         </div>

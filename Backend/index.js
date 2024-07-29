@@ -17,9 +17,9 @@ const getAllClientsInRoom = (roomId) => {
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
         return {
             socketId,
-            userName: usersMap[socketId]
+            userName: usersMap[socketId] || 'Anonymous' // Provide a default name if userName is undefined
         }
-    })
+    }).filter(client => client.userName) // Remove any client without a userName
 }
 
 io.on('connection', ((socket) => {
@@ -44,19 +44,33 @@ io.on('connection', ((socket) => {
 
     })
 
+    // Handle user disconnection
+    const handleDisconnect = () => {
+        const rooms = [...socket.rooms];
+        if (rooms.length > 1) {
+            const roomId = rooms[1];
+            const userName = usersMap[socket.id];
 
-    socket.on('disconnecting', () => {
-        const rooms = [...socket.rooms]
-        rooms.forEach((roomId) => {
-            socket.in(roomId).emit('disconnected', {
+            // Remove user from the map
+            delete usersMap[socket.id];
+
+            // Leave the room
+            socket.leave(roomId);
+
+            // Get updated clients list
+            const updatedClients = getAllClientsInRoom(roomId);
+
+            // Notify other clients in the room with the updated list
+            io.to(roomId).emit('userLeft', {
                 socketId: socket.id,
-                userName: usersMap[socket.id]
-            })
-        })
-        usersMap.delete(socket.id);
-        socket.leave();
-    })
+                userName: userName,
+                updatedClients: updatedClients
+            });
+        }
+    }
 
+    socket.on('leaveRoom', handleDisconnect);
+    socket.on('disconnect', handleDisconnect);
 }))
 
 
