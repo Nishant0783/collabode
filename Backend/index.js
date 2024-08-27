@@ -24,6 +24,14 @@ const getAllClientsInRoom = (roomId) => {
 
 io.on('connection', ((socket) => {
 
+    // Event to check if a room exists
+    socket.on('checkRoom', ({ roomId }, callback) => {
+        const roomExists = io.sockets.adapter.rooms.has(roomId);
+        console.log("Map is on checking: ", usersMap);
+        callback({ exists: roomExists });
+    });
+
+
     // join event
     socket.on('join', ({ userName, roomId }) => {
 
@@ -41,6 +49,8 @@ io.on('connection', ((socket) => {
                 socketId: socket.id
             })
         })
+
+        console.log("Map is on join: ", usersMap);
 
     })
 

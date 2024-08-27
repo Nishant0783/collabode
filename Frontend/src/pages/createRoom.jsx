@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { CopyIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import generateRoomId from '@/utils/generateRoomId';
+import socket from '@/utils/socket';
 
 const CreateRoom = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const CreateRoom = () => {
   const [error, setError] = useState('')
 
   const startRoom = () => {
-    if(userName == '' || roomId == '') {
+    if (userName == '' || roomId == '') {
       setError("Username and roomId is required")
       return;
     }
@@ -30,6 +31,24 @@ const CreateRoom = () => {
   }
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(roomId)
+  }
+
+  const joinRoom = () => {
+    if (userName === '' || roomId === '') {
+      setError("Username and roomId are required");
+      return;
+    }
+
+    // Emit an event to check if the room exists
+    socket.emit('checkRoom', { roomId }, (response) => {
+      if (response.exists) {
+        sessionStorage.setItem('userName', userName);
+        sessionStorage.setItem('roomId', roomId);
+        navigate(`/room/${roomId}`);
+      } else {
+        setError("Room ID does not exist");
+      }
+    });
   }
 
   return (
@@ -48,15 +67,19 @@ const CreateRoom = () => {
             <CardContent className="space-y-2">
               <div className="space-y-1">
                 <Label htmlFor="name">Name <span className='text-red-500'>*</span></Label>
-                <Input id="name" placeholder="Enter your name" />
+                <Input id="name" placeholder="Enter your name"
+                  onChange={(e) => setUserName(e.target.value)} value={userName}
+                />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="roomId">Room ID <span className='text-red-500'>*</span></Label>
-                <Input id="roomId" placeholder="Enter valid room Id" />
+                <Input id="roomId" placeholder="Enter valid room Id"
+                  onChange={(e) => setRoomId(e.target.value)} value={roomId}
+                />
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" disabled>Join Room</Button>
+              <Button className="w-full" onClick={joinRoom}>Join Room</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -76,9 +99,9 @@ const CreateRoom = () => {
               <div className="space-y-2">
                 <div className='flex items-center gap-x-[10px]'>
                   <Label htmlFor="roomId">Room ID <span className='text-red-500'>*</span></Label>
-                  <CopyIcon className='w-[15px] h-[15px] cursor-pointer hover:text-blue-500' onClick={handleCopyRoomId}/>
+                  <CopyIcon className='w-[15px] h-[15px] cursor-pointer hover:text-blue-500' onClick={handleCopyRoomId} />
                 </div>
-                <Input id="roomId" placeholder="q2f-1234rt-7832gf-89" value={roomId} disabled/>
+                <Input id="roomId" placeholder="q2f-1234rt-7832gf-89" value={roomId} disabled />
               </div>
             </CardContent>
             <CardFooter>
