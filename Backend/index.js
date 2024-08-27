@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 const app = express();
 const server = http.createServer(app);
 const usersMap = new Map();
+const roomCodeMap = new Map();
 
 const io = new Server(server, {
     cors: {
@@ -54,6 +55,26 @@ io.on('connection', ((socket) => {
 
     })
 
+
+    // Handle code change event
+    socket.on('codeChange', ({ code }) => {
+        // Get the rooms the socket is connected to
+        const rooms = [...socket.rooms];
+
+        if (rooms.length > 1) {
+            if (rooms.length > 1) {
+                const roomId = rooms[1];
+
+                // Update the latest code in the map
+                roomCodeMap.set(roomId, code);
+
+                // Broadcast the code change to other clients in the same room
+                socket.to(roomId).emit('codeUpdate', code);
+            }
+        }
+    });
+
+
     // Handle user disconnection
     const handleDisconnect = () => {
         const rooms = [...socket.rooms];
@@ -76,6 +97,10 @@ io.on('connection', ((socket) => {
                 userName: userName,
                 updatedClients: updatedClients
             });
+
+            // Send the latest code to the newly joined user
+            const latestCode = roomCodeMap.get(roomId) || '//some comment';
+            io.to(socket.id).emit('codeUpdate', latestCode);
         }
     }
 
