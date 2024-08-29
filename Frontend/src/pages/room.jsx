@@ -13,6 +13,7 @@ const Room = () => {
     socket.emit('join', ({ userName, roomId }))
 
     socket.on('joined', ({ clients, userName, socketId }) => {
+      console.log("Clients are: ", clients)
       setClients(clients)
     })
 

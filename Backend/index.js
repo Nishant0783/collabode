@@ -1,12 +1,10 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import socketConfig from './config/socketConfig.js';
 
 const app = express();
 const server = http.createServer(app);
-const usersMap = new Map();
-const roomCodeMap = new Map();
-
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:5173",
@@ -14,101 +12,8 @@ const io = new Server(server, {
     }
 });
 
-const getAllClientsInRoom = (roomId) => {
-    return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
-        return {
-            socketId,
-            userName: usersMap[socketId] || 'Anonymous' // Provide a default name if userName is undefined
-        }
-    }).filter(client => client.userName) // Remove any client without a userName
-}
-
-io.on('connection', ((socket) => {
-
-    // Event to check if a room exists
-    socket.on('checkRoom', ({ roomId }, callback) => {
-        const roomExists = io.sockets.adapter.rooms.has(roomId);
-        console.log("Map is on checking: ", usersMap);
-        callback({ exists: roomExists });
-    });
-
-
-    // join event
-    socket.on('join', ({ userName, roomId }) => {
-
-        // Add user to map
-        usersMap[socket.id] = userName;
-
-        // Actually joining user to the room
-        socket.join(roomId)
-
-        const clients = getAllClientsInRoom(roomId)
-        clients.forEach(({ socketId }) => {
-            io.to(socketId).emit('joined', {
-                clients,
-                userName,
-                socketId: socket.id
-            })
-        })
-
-        console.log("Map is on join: ", usersMap);
-
-    })
-
-
-    // Handle code change event
-    socket.on('codeChange', ({ code }) => {
-        // Get the rooms the socket is connected to
-        const rooms = [...socket.rooms];
-
-        if (rooms.length > 1) {
-            if (rooms.length > 1) {
-                const roomId = rooms[1];
-
-                // Update the latest code in the map
-                roomCodeMap.set(roomId, code);
-
-                // Broadcast the code change to other clients in the same room
-                socket.to(roomId).emit('codeUpdate', code);
-            }
-        }
-    });
-
-
-    // Handle user disconnection
-    const handleDisconnect = () => {
-        const rooms = [...socket.rooms];
-        if (rooms.length > 1) {
-            const roomId = rooms[1];
-            const userName = usersMap[socket.id];
-
-            // Remove user from the map
-            delete usersMap[socket.id];
-
-            // Leave the room
-            socket.leave(roomId);
-
-            // Get updated clients list
-            const updatedClients = getAllClientsInRoom(roomId);
-
-            // Notify other clients in the room with the updated list
-            io.to(roomId).emit('userLeft', {
-                socketId: socket.id,
-                userName: userName,
-                updatedClients: updatedClients
-            });
-
-            // Send the latest code to the newly joined user
-            const latestCode = roomCodeMap.get(roomId) || '//some comment';
-            io.to(socket.id).emit('codeUpdate', latestCode);
-        }
-    }
-
-    socket.on('leaveRoom', handleDisconnect);
-    socket.on('disconnect', handleDisconnect);
-}))
-
-
+// Apply socket configuration
+socketConfig(io);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
