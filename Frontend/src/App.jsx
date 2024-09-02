@@ -6,14 +6,19 @@ import Room from './pages/room'
 import RootLayout from './Layout/rootLayout';
 import './App.css';
 import { ThemeProvider } from './components/theme-provider'
+import Home from './pages/home'
 
 const App = () => {
 
   const router = createBrowserRouter([
     {
-      path: '/',
+      path: '',
       element: <RootLayout />,
       children: [
+        {
+          path: '/',
+          element: <Home />
+        },
         {
           path: '/auth',
           element: <Auth />
@@ -26,16 +31,15 @@ const App = () => {
           path: '/room/:roomId',
           element: <Room />
         },
-
       ]
     }
   ])
 
   return (
     <>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <RouterProvider router={router} />
-    </ThemeProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </>
   )
 }

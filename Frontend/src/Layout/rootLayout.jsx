@@ -3,8 +3,10 @@ import { Outlet } from 'react-router-dom'
 
 const RootLayout = () => {
   return (
-    <Outlet />
-  )
+    <div className='px-[100px]'>
+      <Outlet />
+    </div>
+)
 }
 
 export default RootLayout
