@@ -1,21 +1,18 @@
-import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import socketConfig from './config/socketConfig.js';
+import dotenv from 'dotenv';
+import connectDB from './db/index.js';
+import { app } from './app.js';
+dotenv.config();
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST"]
-    }
-});
-
-// Apply socket configuration
-socketConfig(io);
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log("Server is listening on port:", PORT);
-});
+connectDB()
+    .then(() => {
+        app.on("error", (error) => {
+            console.log("ERR: ", error);
+            throw error;
+        })
+        app.listen(process.env.PORT || 8000, () => {
+            console.log(`Server is running on port: ${process.env.PORT || 8000}`)
+        })
+    })
+    .catch((err) => {
+        console.log("Mongo DB connection failed: ", err);
+    })
