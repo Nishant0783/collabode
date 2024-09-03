@@ -76,17 +76,18 @@ const Auth = () => {
       return;
     }
 
-    // navigate('/create-room', { replace: true });
     setDefaultTab("login")
 
-    setUser('');
-    setPwd('');
-    setMatchPwd('');
+    setUsername('');
+    setName('');
+    setEmail('');
+    setPassword('');
+    setCnfrmPassword('');
   }
 
   return (
     <section className='flex items-center h-[100vh] justify-center align-middle'>
-      <Tabs defaultValue={defaultTab} className="w-[400px]">
+      <Tabs  value={defaultTab} onValueChange={(val) => setDefaultTab(val)} className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">Sign Up</TabsTrigger>
           <TabsTrigger value="login">Login</TabsTrigger>
