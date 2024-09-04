@@ -85,15 +85,18 @@ const Auth = () => {
       })
 
       console.log(response);
-      setDefaultTab("login")
+      if (response?.status === 201) {
+        setDefaultTab("login")
 
-      setUsername('');
-      setName('');
-      setEmail('');
-      setPassword('');
-      setCnfrmPassword('');
-      setErrMsg('');
-      
+        setUsername('');
+        setName('');
+        setEmail('');
+        setPassword('');
+        setCnfrmPassword('');
+        setErrMsg('');
+      }
+
+
     } catch (error) {
       console.error(error)
       if (!error.response) {
