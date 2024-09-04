@@ -3,6 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import socketConfig from './config/socketConfig.js';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use(express.json({
 app.use(express.urlencoded({extended: true, limit: "16kb"}));
 
 app.use(express.static('public'));
+
+app.use(cookieParser());
 
 const server = http.createServer(app);
 
