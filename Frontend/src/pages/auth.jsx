@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from 'react-router-dom';
 import { CircleAlert } from 'lucide-react';
+import axios from 'axios';
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
@@ -62,7 +63,7 @@ const Auth = () => {
   }, []);
 
   // Signup
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     if (username == '' || password == '' || name == '' || email == '' || cnfrmPassword == '') {
       setErrMsg("All fields are required!");
@@ -76,18 +77,44 @@ const Auth = () => {
       return;
     }
 
-    setDefaultTab("login")
+    try {
+      const response = await axios.post('http://localhost:5000/api/v1/users/register', { username, name, emailId: email, password }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-    setUsername('');
-    setName('');
-    setEmail('');
-    setPassword('');
-    setCnfrmPassword('');
+      console.log(response);
+      setDefaultTab("login")
+
+      setUsername('');
+      setName('');
+      setEmail('');
+      setPassword('');
+      setCnfrmPassword('');
+      setErrMsg('');
+      
+    } catch (error) {
+      console.error(error)
+      if (!error.response) {
+        setErrMsg("No Server Response")
+      } else if (error.response?.status === 409) {
+        setErrMsg("Username or Email already taken")
+      } else if (error.response?.status === 400) {
+        setErrMsg("All fields are required")
+      } else if (error.response?.status === 500) {
+        setErrMsg("Internal Server Error!");
+      } else {
+        setErrMsg("Signup failed");
+      }
+    }
+
+
   }
 
   return (
     <section className='flex items-center h-[100vh] justify-center align-middle'>
-      <Tabs  value={defaultTab} onValueChange={(val) => setDefaultTab(val)} className="w-[400px]">
+      <Tabs value={defaultTab} onValueChange={(val) => setDefaultTab(val)} className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">Sign Up</TabsTrigger>
           <TabsTrigger value="login">Login</TabsTrigger>

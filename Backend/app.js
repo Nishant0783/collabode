@@ -2,8 +2,14 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import socketConfig from './config/socketConfig.js';
+import cors from 'cors';
 
 const app = express();
+
+app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+}));
 
 app.use(express.json({
     limit: '16kb', // Here we are setting the size of data allowed to save on our server.
