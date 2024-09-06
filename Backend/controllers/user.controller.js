@@ -72,7 +72,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // 1) Get details from frontend
     const { username, password } = req.body;
     console.log(req.body);
-
+    
     // 2) Find user in DB
     const user = await User.findOne({ username: username });
     if (!user) {

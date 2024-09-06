@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Card,
@@ -21,6 +21,7 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const Auth = () => {
   const userRef = useRef();
   const errRef = useRef();
+  const loginErrRef = useRef();
   const navigate = useNavigate();
   const [defaultTab, setDefaultTab] = useState('signup');
 
@@ -39,11 +40,18 @@ const Auth = () => {
   const [validMatch, setValidMatch] = useState(false);
   const [matchFocus, setMatchFocus] = useState(false);
 
-  const [errMsg, setErrMsg] = useState();
+  const [signupErrMsg, setSignupErrMsg] = useState();
+
+
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPwd, setLoginPwd] = useState('');
+  const [loginErrMsg, setLoginErrMsg] = useState('');
 
   // focus on username on component load
   useEffect(() => {
-    userRef.current.focus();
+    if (defaultTab === "signup") {
+      userRef.current.focus();
+    }
   }, []);
 
   // check whether username matches regex
@@ -59,8 +67,17 @@ const Auth = () => {
 
   // set err msg to empty string when any of input field is changed as user has read error message and now he is adjusting to changes.
   useEffect(() => {
-    setErrMsg('')
+    setSignupErrMsg('');
+    setLoginErrMsg('');
   }, []);
+
+  useEffect(() => {
+    if (defaultTab === "signup") {
+      setLoginErrMsg("");
+    } else if (defaultTab === "login") {
+      setSignupErrMsg("");
+    }
+  }, [])
 
   // Signup
   const handleSignup = async (e) => {
@@ -73,7 +90,7 @@ const Auth = () => {
     const v1 = USER_REGEX.test(username);
     const v2 = PWD_REGEX.test(password)
     if (!v1 || !v2) {
-      setErrMsg("Invalid Entry");
+      setSignupErrMsg("Invalid Entry");
       return;
     }
 
@@ -93,27 +110,54 @@ const Auth = () => {
         setEmail('');
         setPassword('');
         setCnfrmPassword('');
-        setErrMsg('');
+        setSignupErrMsg('');
       }
-
-
     } catch (error) {
       console.error(error)
       if (!error.response) {
-        setErrMsg("No Server Response")
+        setSignupErrMsg("No Server Response")
       } else if (error.response?.status === 409) {
-        setErrMsg("Username or Email already taken")
+        setSignupErrMsg("Username or Email already taken")
       } else if (error.response?.status === 400) {
-        setErrMsg("All fields are required")
+        setSignupErrMsg("All fields are required")
       } else if (error.response?.status === 500) {
-        setErrMsg("Internal Server Error!");
+        setSignupErrMsg("Internal Server Error!");
       } else {
-        setErrMsg("Signup failed");
+        setSignupErrMsg("login failed");
       }
     }
-
-
   }
+
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginUsername || !loginPwd) {
+      setLoginErrMsg("All Fields are required.");
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/v1/users/login', { username: loginUsername, password: loginPwd }, {
+        headers: {
+          "Content-Type": "Application/json"
+        }
+      })
+      if (response?.status === 201) {
+        console.log("Login Successfull");
+        navigate('/create-room')
+      }
+    } catch (error) {
+      if (!error.response) {
+        setLoginErrMsg("No Server Response")
+      } else if (error.response?.status === 404) {
+        setLoginErrMsg("User not found.")
+      } else if (error.response?.status === 401) {
+        setLoginErrMsg("Invalid user credentials")
+      } else {
+        setLoginErrMsg("Signup failed");
+      }
+    }
+  }
+
 
   return (
     <section className='flex items-center h-[100vh] justify-center align-middle'>
@@ -216,6 +260,8 @@ const Auth = () => {
               </Button>
             </CardFooter>
           </Card>
+
+          {/* LOGIN */}
         </TabsContent>
         <TabsContent value="login">
           <Card>
@@ -227,19 +273,20 @@ const Auth = () => {
               <div className="space-y-2">
                 <Label htmlFor="username">Username <span className='text-red-500'>*</span></Label>
                 <Input id="username" placeholder="Enter your username"
-                // onChange={(e) => setUserName(e.target.value)} value={userName}
+                  onChange={(e) => setLoginUsername(e.target.value)} value={loginUsername}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password <span className='text-red-500'>*</span></Label>
-                <Input id="password" placeholder="Enter your password"
-                // onChange={(e) => setUserName(e.target.value)} value={userName}
+                <Label htmlFor="loginPassword">Password <span className='text-red-500'>*</span></Label>
+                <Input id="loginPassword" placeholder="Enter your password"
+                  onChange={(e) => setLoginPwd(e.target.value)} value={loginPwd}
                 />
               </div>
             </CardContent>
             <CardFooter>
               <Button className="w-full"
-              // onClick={startRoom}
+                type='submit'
+                onClick={handleLogin}
               >
                 Login
               </Button>
@@ -247,7 +294,8 @@ const Auth = () => {
           </Card>
         </TabsContent>
         <div className='text-center'>
-          <p ref={errRef} className={errMsg !== '' ? "block text-red-600" : "hidden"} aria-live="assertive">{errMsg}</p>
+          <p ref={errRef} className={signupErrMsg !== '' ? "block text-red-600" : "hidden"} aria-live="assertive">{signupErrMsg}</p>
+          <p ref={loginErrRef} className={loginErrMsg !== '' ? "block text-red-600" : "hidden"} aria-live="assertive">{loginErrMsg}</p>
         </div>
       </Tabs>
 
