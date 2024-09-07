@@ -1,4 +1,4 @@
-import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Card,
@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from 'react-router-dom';
 import { CircleAlert } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
+import AuthContext from '@/context/AuthProvider';
 import axios from 'axios';
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
@@ -23,6 +25,7 @@ const Auth = () => {
   const errRef = useRef();
   const loginErrRef = useRef();
   const navigate = useNavigate();
+  const { setAuth } = useContext(AuthContext);
   const [defaultTab, setDefaultTab] = useState('signup');
 
   const [username, setUsername] = useState('');
@@ -139,11 +142,20 @@ const Auth = () => {
       const response = await axios.post('http://localhost:5000/api/v1/users/login', { username: loginUsername, password: loginPwd }, {
         headers: {
           "Content-Type": "Application/json"
-        }
+        },
+        withCredentials: true
       })
       if (response?.status === 201) {
-        console.log("Login Successfull");
-        navigate('/create-room')
+        console.log("Login Successfull: ", response);
+        try {
+          setAuth({ username: loginUsername, accessToken: response?.data?.accessToken });
+        } catch (error) {
+          console.log("Error in reposne: ", error)
+        }
+        setLoginErrMsg('');
+        setLoginUsername('');
+        setLoginPwd('');
+        navigate('/create-room');
       }
     } catch (error) {
       if (!error.response) {
@@ -283,7 +295,16 @@ const Auth = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-y-[20px]">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="terms" />
+                <label
+                  htmlFor="terms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Keep me logged in
+                </label>
+              </div>
               <Button className="w-full"
                 type='submit'
                 onClick={handleLogin}

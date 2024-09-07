@@ -7,6 +7,7 @@ import RootLayout from './Layout/rootLayout';
 import './App.css';
 import { ThemeProvider } from './components/theme-provider'
 import Home from './pages/home'
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 
 const App = () => {
 
@@ -24,13 +25,22 @@ const App = () => {
           element: <Auth />
         },
         {
-          path: '/create-room',
-          element: <CreateRoom />
+          element: <ProtectedRoute />,
+          children: [
+            {
+              path: '/create-room',
+              element: <CreateRoom />
+            },
+            {
+              path: '/room/:roomId',
+              element: <Room />
+            }
+          ]
         },
         {
-          path: '/room/:roomId',
-          element: <Room />
-        },
+          path: '/unauthorized',
+          element: <h1>unauthorized</h1>
+        }
       ]
     }
   ])
