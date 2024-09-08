@@ -8,6 +8,7 @@ import { CopyIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import generateRoomId from '@/utils/generateRoomId';
 import socket from '@/utils/socket';
+import axios from 'axios';
 
 const CreateRoom = () => {
   const navigate = useNavigate();
@@ -50,6 +51,41 @@ const CreateRoom = () => {
       }
     });
   }
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/v1/users/logout', 
+        {}, // Send an empty object as the body for a POST request
+        {
+          withCredentials: true // Set withCredentials in the configuration object
+        }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRefresh = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/v1/users/refresh-token', 
+        {}, // Send an empty object as the body for a POST request
+        {
+          withCredentials: true // Set withCredentials in the configuration object
+        }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
 
   return (
     <div className='flex items-center h-[100vh] justify-center align-middle'>
@@ -117,6 +153,8 @@ const CreateRoom = () => {
           </Card>
         </TabsContent>
         {error !== '' && <p className='text-red-500 text-center'>{error}</p>}
+        <button className='bg-red-500 px-[10px] py-[5px] mr-[20px]' onClick={handleLogout}>Logout</button>
+        <button className='bg-red-500 px-[10px] py-[5px]' onClick={handleRefresh}>Refresh</button>
       </Tabs>
     </div >
   )

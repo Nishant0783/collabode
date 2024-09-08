@@ -11,6 +11,7 @@ export const verifyJWT = asyncHandler(async(req, res, next) => {
         }
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
         if(!user) {
             throw new ApiError(401, "Invalid Access Token");
@@ -20,6 +21,6 @@ export const verifyJWT = asyncHandler(async(req, res, next) => {
         next()
     } catch (error) {
         console.log("error in middleware: ", error)
-        throw new ApiError(401, "Invalid access token");
+        throw new ApiError(401, "Invalid access token in catch block");
     }
 })
