@@ -120,7 +120,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // #LOGOUT
 const logout = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(
+    console.log("logout called")
+    const newUser = await User.findByIdAndUpdate(
         req.user._id,
         {
             $unset: {
@@ -131,6 +132,9 @@ const logout = asyncHandler(async (req, res) => {
             new: true
         }
     )
+
+    console.log("New User: ", newUser, '\n')
+
     const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production'
