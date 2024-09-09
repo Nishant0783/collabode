@@ -12,11 +12,13 @@ const generateRefreshAndAccessToken = async (userId) => {
 
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
+        console.log("Refresh token generated: ", refreshToken, " \n")
+        console.log("Access token generated: ", accessToken, " \n")
 
         user.refreshToken = refreshToken;
 
         await user.save({ validateBeforeSave: false });
-        return { accessToken, refreshToken };
+        return { accessToken, refreshToken };   
     } catch (error) {
         console.error("Error in generating refresh and access token: ", error)
         throw new ApiError(500, "Internal Sever Error");
@@ -95,7 +97,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // 6) Save data to cookies
     const options = {
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
     }
 
     // 7) Response
@@ -131,7 +133,7 @@ const logout = asyncHandler(async (req, res) => {
     )
     const options = {
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
     }
 
     return res
@@ -143,50 +145,60 @@ const logout = asyncHandler(async (req, res) => {
         )
 })
 
-
+let refreshTokenCount = 0;
 // #REFRESH ACCESS TOKEN
 const refreshAccessToken = asyncHandler(async (req, res) => {
+    refreshTokenCount++;
+    console.log("RefreshtokenCount: ", refreshTokenCount, '\n')
     // 1) Get the refresh token which is with user
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
-    console.log("Incoming refresh token: ", incomingRefreshToken)
-    if(!incomingRefreshToken) {
+
+    console.log("Incoming refresh token: ", incomingRefreshToken, '\n')
+    console.log("Cookies token: ", req.cookies.refreshToken, '\n')
+    // console.log("body token: ", req.body.refreshToken)
+
+    if (!incomingRefreshToken) {
         throw new ApiError(401, "Unauthorized Request");
     }
 
     try {
         // 2) Decode the token to get the details (userId) stored in token
         const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+        console.log("Decoded token: ", decodedToken, '\n');
 
         // 3) Get the userId and find it in DB
         const user = await User.findById(decodedToken?._id).select("-password");
-        if(!user) {
+        console.log("user is: ", user, '\n')
+        if (!user) {
             throw new ApiError(402, "Invalid refresh token")
         }
 
         // 4) Match the refresh token stored in db to the token we got from user
-        console.log(incomingRefreshToken === user?.refreshToken)
-        console.log("User token: ", user?.refreshToken)
-        if(incomingRefreshToken !== user?.refreshToken) {
+        console.log(incomingRefreshToken === user.refreshToken, '\n')
+        console.log("User token: ", user.refreshToken, '\n')
+        if (incomingRefreshToken !== user.refreshToken) {
             throw new ApiError(403, "Refresh token is expired or used")
         }
 
         // 5) Generate new access token and for safety purpose generate new refresh token also
-        const { accessToken, newRefreshToken } = await generateRefreshAndAccessToken(user._id);
+        const { accessToken, refreshToken: newRefreshToken } = await generateRefreshAndAccessToken(user._id);
+        console.log("new access token: ", accessToken, '\n')
+        console.log("New refresh token: ", newRefreshToken, '\n');
 
         // 6) send generated access token in cookies
         const options = {
             httpOnly: true,
-            secure: true
+            secure: process.env.NODE_ENV === 'production'
         }
 
         return res
             .status(201)
             .cookie("accessToken", accessToken, options)
-            .cookie("refresToken", newRefreshToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
             .json(
-                new ApiResponse (
+                new ApiResponse(
                     200,
-                    { accessToken, refreshToken: newRefreshToken},
+                    { user, accessToken, refreshToken: newRefreshToken },
                     "Access token refreshed successfully"
                 )
             )

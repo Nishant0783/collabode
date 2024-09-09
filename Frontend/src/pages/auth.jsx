@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from 'react-router-dom';
 import { CircleAlert } from 'lucide-react';
-import { Checkbox } from "@/components/ui/checkbox";
 import AuthContext from '@/context/AuthProvider';
 import axios from 'axios';
 
@@ -25,7 +24,7 @@ const Auth = () => {
   const errRef = useRef();
   const loginErrRef = useRef();
   const navigate = useNavigate();
-  const { setAuth } = useContext(AuthContext);
+  const { setAuth, persist, setPersist } = useContext(AuthContext);
   const [defaultTab, setDefaultTab] = useState('signup');
 
   const [username, setUsername] = useState('');
@@ -73,6 +72,13 @@ const Auth = () => {
     setSignupErrMsg('');
     setLoginErrMsg('');
   }, []);
+
+  // set persist
+  useEffect(() => {
+    console.log("persist changed: ", persist)
+    localStorage.setItem("persist", persist);
+  }, [persist]);
+
 
   useEffect(() => {
     if (defaultTab === "signup") {
@@ -132,6 +138,14 @@ const Auth = () => {
   }
 
 
+  // Toggle Persist
+  const togglePersist = () => {
+    console.log("Persist before: ", persist)
+    setPersist(prev => !prev);
+    console.log("Persist after: ", persist)
+  }
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!loginUsername || !loginPwd) {
@@ -147,11 +161,7 @@ const Auth = () => {
       })
       if (response?.status === 201) {
         console.log("Login Successfull: ", response);
-        try {
-          setAuth({ username: loginUsername, accessToken: response?.data?.accessToken });
-        } catch (error) {
-          console.log("Error in reposne: ", error)
-        }
+        setAuth({ username: loginUsername, accessToken: response?.data?.accessToken });
         setLoginErrMsg('');
         setLoginUsername('');
         setLoginPwd('');
@@ -297,13 +307,19 @@ const Auth = () => {
             </CardContent>
             <CardFooter className="flex flex-col gap-y-[20px]">
               <div className="flex items-center space-x-2">
-                <Checkbox id="terms" />
-                <label
-                  htmlFor="terms"
+                <Input 
+                  id="persist" 
+                  type="checkbox"
+                  onChange={togglePersist}
+                  checked={persist} 
+                  className="w-[15px] h-[15px]"
+                  />
+                <Label
+                  htmlFor="persist"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Keep me logged in
-                </label>
+                </Label>
               </div>
               <Button className="w-full"
                 type='submit'

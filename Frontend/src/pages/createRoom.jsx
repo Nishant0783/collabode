@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,12 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import generateRoomId from '@/utils/generateRoomId';
 import socket from '@/utils/socket';
 import axios from 'axios';
+import AuthContext from '@/context/AuthProvider';
+import useLogout from '@/hooks/useLogout';
 
 const CreateRoom = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState('')
   const [roomId, setRoomId] = useState('')
   const [error, setError] = useState('')
+  const { setAuth } = useContext(AuthContext);
+  const logout = useLogout();
 
   const startRoom = () => {
     if (userName == '' || roomId == '') {
@@ -54,38 +58,39 @@ const CreateRoom = () => {
 
   const handleLogout = async (e) => {
     e.preventDefault();
+
+    try { 
+      await logout();
+      navigate('/auth');
+    } catch(error) {
+      setError(error.message)
+    }
   
+  };
+
+  const handleRefresh = async (e) => {
+    e.preventDefault();
+
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/v1/users/logout', 
+        'http://localhost:5000/api/v1/users/refresh-token',
         {}, // Send an empty object as the body for a POST request
         {
           withCredentials: true // Set withCredentials in the configuration object
         }
       );
-      console.log(response);
+      if (response.status === 201) {
+        console.log(response);
+        setAuth((prev) => ({
+          ...prev,
+          accessToken: response?.data?.accessToken
+        }))
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleRefresh = async (e) => {
-    e.preventDefault();
-  
-    try {
-      const response = await axios.post(
-        'http://localhost:5000/api/v1/users/refresh-token', 
-        {}, // Send an empty object as the body for a POST request
-        {
-          withCredentials: true // Set withCredentials in the configuration object
-        }
-      );
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  
 
   return (
     <div className='flex items-center h-[100vh] justify-center align-middle'>
