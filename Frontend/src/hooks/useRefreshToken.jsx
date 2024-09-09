@@ -11,13 +11,13 @@
                 const response = await axios.post('http://localhost:5000/api/v1/users/refresh-token', {}, {
                     withCredentials: true
                 });
-                console.log("Resposne of refresh token: ", response)
+                console.log("Resposne of refresh token: ", response.data?.accessToken)
                 setAuth(prev => ({
                     ...prev,
-                    accessToken: response?.data?.data?.accessToken,
-                    user: response?.data?.data?.user
+                    accessToken: response?.data?.accessToken,
+                    user: response?.data?.user
                 }));
-                return response?.data?.data?.accessToken;
+                return response?.data?.accessToken;
             } catch (error) {
                 console.error("Error refreshing token:", error);
                 setAuth({});  // Clear auth state on error
@@ -28,4 +28,3 @@
     }
     
     export default useRefreshToken;
-
