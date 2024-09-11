@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Room } from './../models/room.model.js';
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+// LOGIN USER
 const createRoom = asyncHandler(async (req, res) => {
     // 1) Get roomId and username from frontend
     const { username, roomId } = req.body;
@@ -23,7 +24,7 @@ const createRoom = asyncHandler(async (req, res) => {
         roomId,
         admin: new mongoose.Types.ObjectId(userId),
     })
-    if(!room) {
+    if (!room) {
         throw new ApiError(400, "Room can't be created")
     }
 
@@ -36,8 +37,51 @@ const createRoom = asyncHandler(async (req, res) => {
 });
 
 
+// JOIN ROOM
+const joinRoom = asyncHandler(async (req, res) => {
+    // 1) Get username and roomId from frontend
+    const { username, roomId } = req.body;
+    if (!username || !roomId) {
+        throw new ApiError(400, "All fields are required")
+    }
+
+    const room = await Room.find({ roomId: roomId })
+    if (!room) {
+        throw new ApiError(404, "Room not found")
+    }
+
+    // 2) Get userId from req.user
+    const userId = req.user?._id;
+    if (!userId) {
+        throw new ApiError(401, "unauthorized, try loging in again")
+    }
+
+    // 3) Update room model with users
+    const updatedRoom = await Room.findOneAndUpdate({ roomId: roomId },
+        {
+            $push: { users: new mongoose.Types.ObjectId(userId) }
+        },
+        {
+            new: true // returns updated document
+        }
+
+    )
+    if (!updatedRoom) {
+        throw new ApiError(400, "Error in joining room")
+    }
+
+    // 4) Send updated room as response
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, updatedRoom, "Room joined successfully")
+        )
+})
+
+
 
 
 export {
-    createRoom
+    createRoom,
+    joinRoom
 }
