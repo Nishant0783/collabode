@@ -39,6 +39,7 @@ const CreateRoom = () => {
   }
 
   const joinRoom = () => {
+    console.log("Join room clicked")
     if (userName === '' || roomId === '') {
       setError("Username and roomId are required");
       return;

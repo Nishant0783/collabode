@@ -86,7 +86,7 @@ const Auth = () => {
     } else if (defaultTab === "login") {
       setSignupErrMsg("");
     }
-  }, [])
+  }, [defaultTab])
 
   // Signup
   const handleSignup = async (e) => {

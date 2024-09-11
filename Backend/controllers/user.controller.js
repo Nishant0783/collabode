@@ -120,8 +120,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // #LOGOUT
 const logout = asyncHandler(async (req, res) => {
-    console.log("logout called")
-    const newUser = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
         req.user._id,
         {
             $unset: {
@@ -132,8 +131,6 @@ const logout = asyncHandler(async (req, res) => {
             new: true
         }
     )
-
-    console.log("New User: ", newUser, '\n')
 
     const options = {
         httpOnly: true,
@@ -149,16 +146,11 @@ const logout = asyncHandler(async (req, res) => {
         )
 })
 
-let refreshTokenCount = 0;
 // #REFRESH ACCESS TOKEN
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    refreshTokenCount++;
-    console.log("RefreshtokenCount: ", refreshTokenCount, '\n')
     // 1) Get the refresh token which is with user
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
-    console.log("Incoming refresh token: ", incomingRefreshToken, '\n')
-    console.log("Cookies token: ", req.cookies.refreshToken, '\n')
     // console.log("body token: ", req.body.refreshToken)
 
     if (!incomingRefreshToken) {
@@ -168,26 +160,20 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     try {
         // 2) Decode the token to get the details (userId) stored in token
         const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-        console.log("Decoded token: ", decodedToken, '\n');
 
         // 3) Get the userId and find it in DB
         const user = await User.findById(decodedToken?._id).select("-password");
-        console.log("user is: ", user, '\n')
         if (!user) {
             throw new ApiError(402, "Invalid refresh token")
         }
 
         // 4) Match the refresh token stored in db to the token we got from user
-        console.log(incomingRefreshToken === user.refreshToken, '\n')
-        console.log("User token: ", user.refreshToken, '\n')
         if (incomingRefreshToken !== user.refreshToken) {
             throw new ApiError(403, "Refresh token is expired or used")
         }
 
         // 5) Generate new access token and for safety purpose generate new refresh token also
         const { accessToken, refreshToken: newRefreshToken } = await generateRefreshAndAccessToken(user._id);
-        console.log("new access token: ", accessToken, '\n')
-        console.log("New refresh token: ", newRefreshToken, '\n');
 
         // 6) send generated access token in cookies
         const options = {
