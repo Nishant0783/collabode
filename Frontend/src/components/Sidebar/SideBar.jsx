@@ -4,14 +4,12 @@ import { CopyIcon } from 'lucide-react';
 import UserBlock from '../UserBlock/UserBlock';
 import '../../customScrollBar.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import socket from '@/utils/socket';
 
 const Sidebar = ({ clients }) => {
   const navigate = useNavigate()
   const {roomId} = useParams()
 
   const onLeaveRoom = () => {
-    socket.emit('leaveRoom')
     navigate('/create-room')
   }
 

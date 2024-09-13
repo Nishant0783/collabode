@@ -4,8 +4,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from 'jsonwebtoken';
 
 export const verifyJWT = asyncHandler(async(req, res, next) => {
+    console.log("\n Auth middleware called \n")
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+        console.log("\n req cookies in middleware: ", JSON.stringify(req.cookies))
+        console.log("\n req header in middleware: ", req.header)
+        console.log("\n Token in middleware: ", token,  "\n");
 
         if(!token) {
             throw new ApiError(401, "Unauthorized request");
@@ -19,7 +23,7 @@ export const verifyJWT = asyncHandler(async(req, res, next) => {
             throw new ApiError(401, "Invalid Access Token");
         }
         
-        req.user = user
+        req.user = user;
         next()
     } catch (error) {
         console.log("error in middleware: ", error)

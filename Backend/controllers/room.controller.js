@@ -4,9 +4,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Room } from './../models/room.model.js';
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-// LOGIN USER
+// CREATE ROOM
 const createRoom = asyncHandler(async (req, res) => {
     // 1) Get roomId and username from frontend
+    console.log('\n create room called \n');
     const { username, roomId } = req.body;
     if (!username || !roomId) {
         throw new ApiError(400, "All fields are required");
@@ -14,7 +15,7 @@ const createRoom = asyncHandler(async (req, res) => {
 
     // 2) Get the userId from req.user
     const userId = req.user?._id;
-    console.log("userID is: ", userId)
+    console.log("\nuserID in room controller is: ", userId)
     if (!userId) {
         throw new ApiError(401, "Unauthorized, try loging in again")
     }
