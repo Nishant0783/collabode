@@ -53,8 +53,8 @@ const CreateRoom = () => {
     joinRoom(roomId, () => {
       sessionStorage.setItem('userName', userName);
       sessionStorage.setItem('roomId', roomId);
-      navigate(`/room/${roomId}`);
     });
+    navigate(`/room/${roomId}`);
   };
 
   const handleLogout = async (e) => {

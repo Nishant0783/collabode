@@ -57,7 +57,7 @@ export const handleSocketEvents = (io, socket) => {
 
         try {
             const response = await axios.patch(
-                `${process.env.API_BASE_URL}/api/v1/room/joinRoom`,
+                `${process.env.API_BASE_URL}/room/joinRoom`,
                 { roomId, username: user.username },
                 {
                     headers: {

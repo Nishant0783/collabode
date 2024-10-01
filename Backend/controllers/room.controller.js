@@ -46,17 +46,11 @@ const createRoom = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Room can't be created")
     }
 
-    const createdRoom = await redis.hmget(roomId);
-    console.log("Created room: ", createdRoom);
-    if(!createdRoom) {
-        throw new ApiError(500, "Interval Server Error");
-    }
-
     // 6) Send response to frontend 
     return res
         .status(200)
         .json(
-            new ApiResponse(200, createdRoom, "Room Created Successfully")
+            new ApiResponse(200, room, "Room Created Successfully")
         )
 });
 

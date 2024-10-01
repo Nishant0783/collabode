@@ -38,6 +38,7 @@ const useSocket = () => {
     };
 
     const joinRoom = (roomId, callback) => {
+        console.log("Join room event called")
         socket.emit('joinRoom', { roomId }, (response) => {
             if(response.success) {
                 callback();
