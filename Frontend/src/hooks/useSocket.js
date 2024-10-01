@@ -3,6 +3,7 @@ import socket from "@/socket/socket";
 
 const useSocket = () => {
     const [roomExists, setRoomExists] = useState(false);
+    const [roomUsers, setRoomUsers] = useState([])
 
     useEffect(() => {
         console.log("Setting up socket listeners");
@@ -10,9 +11,15 @@ const useSocket = () => {
             setRoomExists(exists);
         });
 
+        socket.on('roomUsers', (users) => {
+            console.log("Recieved Users: ", users);
+            setRoomUsers(users);
+        })
+
         return () => {
             console.log("Cleaning up socket listeners");
             socket.off('roomExists');
+            socket.off('roomUsers');
         }
 
     }, []);
@@ -40,7 +47,11 @@ const useSocket = () => {
         })
     }
 
-    return { createRoom, joinRoom, roomExists };
+    const getRoomUsers = (roomId) => {
+        socket.emit('getRoomUsers', { roomId });
+    }
+
+    return { createRoom, joinRoom, roomExists, getRoomUsers, roomUsers };
 };
 
 export default useSocket;

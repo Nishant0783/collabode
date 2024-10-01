@@ -1,6 +1,7 @@
 import axios from "axios";
 import { asyncHandler } from "../utils/asyncHandler.js"
 import cookie from 'cookie';
+import redis from "../redis/redisClient.js";
 
 export const handleSocketEvents = (io, socket) => {
     socket.on('createRoom', asyncHandler(async ({ roomId }, callback) => {
@@ -29,7 +30,7 @@ export const handleSocketEvents = (io, socket) => {
                 }
             );
 
-            console.log("\n Response of create room: ", response);
+            // console.log("\n Response of create room: ", response);
             if (response.status === 200) {
                 callback({ success: true, message: 'Room created successfully and saved to database \n' })
             }
@@ -72,6 +73,24 @@ export const handleSocketEvents = (io, socket) => {
             console.error('Error saving joined room to the database:', error.message);
             callback({ success: false, message: 'Failed to save joined room to the database.' });
         }
+    }));
+
+    socket.on('getRoomUsers', asyncHandler(async ({roomId}) => {
+        if(!roomId) {
+            socket.emit('error', { message: "Room ID is required."});
+            return;
+        }
+
+        // Get users from redis
+        const users = await redis.hmget(roomId, 'users');
+        if(!users) {
+            socket.emit('error', { message: "No users found."});
+            return;
+        }
+        console.log("Users from redis: ", users)
+
+        // Emit users to the client
+        socket.emit('roomUsers', JSON.parse(users));
     }));
 
     socket.on('disconnect', () => {

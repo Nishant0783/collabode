@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Room } from './../models/room.model.js';
 import { ApiResponse } from "../utils/ApiResponse.js";
+import redis from "../redis/redisClient.js";
 
 // CREATE ROOM
 const createRoom = asyncHandler(async (req, res) => {
@@ -13,14 +14,30 @@ const createRoom = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required");
     }
 
-    // 2) Get the userId from req.user
+    // 2) Get the userId from req.  
     const userId = req.user?._id;
     console.log("\nuserID in room controller is: ", userId)
     if (!userId) {
         throw new ApiError(401, "Unauthorized, try loging in again")
     }
 
-    // 3) create a new room with all the neccessary details
+    // 3) Check if room already exists in redis
+    const roomExists = await redis.exists(roomId);
+    console.log("Room exists: ", roomExists);
+    if (roomExists == 1) {
+        throw new ApiError(400, "Room already exists");
+    }
+
+    // 4) Create a room schema in redis
+    await redis.hmset(roomId, {
+        admin: JSON.stringify({
+            userId,
+            username
+        }),
+        users: JSON.stringify([{ userId, username }])
+    })
+
+    // 5) create a new room with all the neccessary details
     const room = await Room.create({
         roomId,
         admin: new mongoose.Types.ObjectId(userId),
@@ -29,11 +46,17 @@ const createRoom = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Room can't be created")
     }
 
-    // 4) Send response to frontend 
+    const createdRoom = await redis.hmget(roomId);
+    console.log("Created room: ", createdRoom);
+    if(!createdRoom) {
+        throw new ApiError(500, "Interval Server Error");
+    }
+
+    // 6) Send response to frontend 
     return res
         .status(200)
         .json(
-            new ApiResponse(200, room, "Room Created Successfully")
+            new ApiResponse(200, createdRoom, "Room Created Successfully")
         )
 });
 

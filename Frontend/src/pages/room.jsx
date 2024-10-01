@@ -5,11 +5,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 const Room = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const [clients, setClients] = useState([]);
 
   return (
     <>
-      <Resizable clients={clients}/>
+      <Resizable/>
     </>
   )
 }

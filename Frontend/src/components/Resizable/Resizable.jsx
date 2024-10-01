@@ -6,11 +6,11 @@ import {
 import Sidebar from "../Sidebar/SideBar"
 import Editor from "../Editor/Editor"
 
-const Resizable = ({ clients }) => {
+const Resizable = () => {
   return (
     <ResizablePanelGroup direction="horizontal">
       <ResizablePanel style={{ minWidth: '200px' }} >
-        <Sidebar clients={clients} />
+        <Sidebar />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel>
