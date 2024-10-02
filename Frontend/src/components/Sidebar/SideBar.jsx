@@ -13,7 +13,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     getRoomUsers(roomId);
-  }, [roomId])
+  }, [roomId, navigate])
 
   const onLeaveRoom = () => {
     navigate('/create-room')

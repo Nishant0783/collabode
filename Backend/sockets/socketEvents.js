@@ -19,7 +19,7 @@ export const handleSocketEvents = (io, socket) => {
 
         try {
             const cookies = cookie.parse(socket.handshake.headers.cookie || '');
-            const token = cookies.accessToken; // Adjust 'accessToken' to match your cookie name
+            const token = cookies.accessToken;
 
             console.log("\n Token in socket event: ", token);
             const response = await axios.post(`${process.env.API_BASE_URL}/room/createRoom`, { roomId, username: user.username },
@@ -42,6 +42,7 @@ export const handleSocketEvents = (io, socket) => {
 
 
     socket.on('joinRoom', asyncHandler(async ({ roomId }, callback) => {
+        console.log("Join room event is called")
         const user = socket.user;
         console.log("\n User in join room: ", user);
 
@@ -56,12 +57,16 @@ export const handleSocketEvents = (io, socket) => {
         console.log(`${user.username} joined room ${roomId}`);
 
         try {
+            const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+            const token = cookies.accessToken; 
+
+            console.log("\n Token in join room event: ", token);
             const response = await axios.patch(
                 `${process.env.API_BASE_URL}/room/joinRoom`,
                 { roomId, username: user.username },
                 {
                     headers: {
-                        Authorization: `Bearer ${socket.handshake.auth.token}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 }
             );

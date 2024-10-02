@@ -10,7 +10,7 @@ import generateRoomId from '@/utils/generateRoomId';
 import axios from 'axios';
 import AuthContext from '@/context/AuthProvider';
 import useLogout from '@/hooks/useLogout';
-import useSocket from '@/hooks/useSocket'; 
+import useSocket from '@/hooks/useSocket';
 
 const CreateRoom = () => {
   const navigate = useNavigate();
@@ -38,8 +38,6 @@ const CreateRoom = () => {
     console.log("Inside create room")
     createRoom(roomId, () => {
       console.log("Room created successfully, navigating to room page");
-      sessionStorage.setItem('userName', userName);
-      sessionStorage.setItem('roomId', roomId);
       navigate(`/room/${roomId}`);
     });
   };
@@ -51,10 +49,8 @@ const CreateRoom = () => {
     }
 
     joinRoom(roomId, () => {
-      sessionStorage.setItem('userName', userName);
-      sessionStorage.setItem('roomId', roomId);
+      navigate(`/room/${roomId}`);
     });
-    navigate(`/room/${roomId}`);
   };
 
   const handleLogout = async (e) => {
