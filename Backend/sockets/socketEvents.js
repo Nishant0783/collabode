@@ -58,6 +58,18 @@ export const handleSocketEvents = (io, socket) => {
         socket.join(roomId);
         io.to(roomId).emit('userJoined', { userId: user._id, username: userName });
 
+        const roomData = await redis.hget(roomId, 'users');
+        let users = JSON.parse(roomData) || [];
+
+        // Add the new user to the users array
+        users.push({ userId: user._id, username: userName });
+
+        // Update Redis
+        await redis.hset(roomId, 'users', JSON.stringify(users));
+
+        // Emit to all users in the room
+        io.to(roomId).emit('roomUsers', users); 
+        
         console.log(`${userName} joined room ${roomId}`);
 
         try {
@@ -134,9 +146,24 @@ export const handleSocketEvents = (io, socket) => {
 
         // Inform all other users in the room about the disconnection
         io.to(roomId).emit('roomUsers', users);
+        io.to(roomId).emit('userLeft', user._id);
 
         console.log(`User ${user.username} has been removed from room ${roomId}`);
     }));
+
+    socket.on('disconnect', () => {
+        console.log("Disconnect event triggered");
+
+        const roomId = Array.from(socket.rooms)[1];
+        if (roomId) {
+            // Get the updated users from Redis and emit them to all connected clients
+            redis.hget(roomId, 'users').then((roomData) => {
+                const users = JSON.parse(roomData) || [];
+                io.to(roomId).emit('roomUsers', users); // Emit updated user list to Sidebar
+                console.log(`Updated user list emitted for room ${roomId}`);
+            });
+        }
+    });
 
 
     socket.on('leaveRoom', asyncHandler(async ({ roomId }, callback) => {
@@ -161,6 +188,7 @@ export const handleSocketEvents = (io, socket) => {
 
         // Notify the remaining users in the room about the updated list
         io.to(roomId).emit('roomUsers', users);
+        io.to(roomId).emit('userLeft', user._id);
 
         // Leave the room
         socket.leave(roomId);

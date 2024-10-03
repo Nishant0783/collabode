@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"; 
+import { useEffect, useState, useCallback } from "react";
 import socket from "@/socket/socket";
 
 const useSocket = () => {
@@ -7,21 +7,30 @@ const useSocket = () => {
 
     useEffect(() => {
         console.log("Setting up socket listeners");
-        socket.on('roomExists', (exists) => {
-            setRoomExists(exists);
-        });
 
         socket.on('roomUsers', (users) => {
-            console.log("Recieved Users: ", users);
+            console.log("Received Users: ", users);
             setRoomUsers(users);
-        })
+        });
+
+        socket.on('userJoined', ({ userId, username }) => {
+            setRoomUsers(prevUsers => [...prevUsers, { userID: userId, username }]);
+        });
+
+        socket.on('userLeft', (userId) => {
+            setRoomUsers(prevUsers => prevUsers.filter(user => user.userID !== userId));
+        });
 
         return () => {
             console.log("Cleaning up socket listeners");
-            socket.off('roomExists');
             socket.off('roomUsers');
+            socket.off('userJoined');
+            socket.off('userLeft');
         }
+    }, []);
 
+    const getRoomUsers = useCallback((roomId) => {
+        socket.emit('getRoomUsers', { roomId });
     }, []);
 
 
@@ -41,22 +50,19 @@ const useSocket = () => {
         console.log("Join room event called")
         socket.emit('joinRoom', { roomId, userName }, (response) => {
             console.log("Response of join room: ", response)
-            if(response.success) {
+            if (response.success) {
                 callback();
             } else {
                 console.error("Room join failed: ", response.message)
             }
         })
     }
-
-    const getRoomUsers = (roomId) => {
-        socket.emit('getRoomUsers', { roomId });
-    }
+    
 
     const leaveRoom = (roomId, callback) => {
         console.log("Leaving room");
         socket.emit('leaveRoom', { roomId }, (response) => {
-            if(response.success) {
+            if (response.success) {
                 callback();
             } else {
                 console.log("Leave Room failed: ", response.message)

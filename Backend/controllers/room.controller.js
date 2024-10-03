@@ -1,4 +1,4 @@
-import Mongoose from "mongoose";
+import mongoose from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Room } from './../models/room.model.js';
@@ -75,31 +75,7 @@ const joinRoom = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized, try logging in again");
     }
 
-    // 3) Get the current users list from Redis
-    const roomData = await redis.hget(roomId, 'users');
-    if (!roomData) {
-        throw new ApiError(404, "Room not found in Redis");
-    }   
-
-    // Parse the users array and add the new user
-    let users = JSON.parse(roomData);
-    console.log("Users array: ", users)
-    const newUser = { userId, username };
-
-    // Check if the user is already in the room
-    const userExists = users.find(user => user.userId === userId);
-    if (userExists) {
-        throw new ApiError(400, "User already in the room");
-    }
-
-    // Add the new user to the users array
-    users.push(newUser);
-    console.log("Users after: ", users);
-
-    // Update the users array in Redis
-    await redis.hset(roomId, 'users', JSON.stringify(users));
-
-    // 4) Update room model with users after a delay (optional)
+    // 3) Update room model with users after a delay (optional)
     setTimeout(async () => {
         try {
             // Get the latest users from Redis
