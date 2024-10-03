@@ -8,15 +8,19 @@ import useSocket from '@/hooks/useSocket';
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const {roomId} = useParams();
-  const { getRoomUsers, roomUsers } = useSocket();
+  const { roomId } = useParams();
+  const { getRoomUsers, roomUsers, leaveRoom } = useSocket();
 
   useEffect(() => {
     getRoomUsers(roomId);
   }, [roomId, navigate])
 
   const onLeaveRoom = () => {
-    navigate('/create-room')
+    leaveRoom(roomId, () => {
+      console.log(`User left room ${roomId}`)
+      navigate('/create-room')  
+    })
+
   }
 
   const handleCopyRoomId = () => {

@@ -25,9 +25,9 @@ const useSocket = () => {
     }, []);
 
 
-    const createRoom = (roomId, callback) => {
+    const createRoom = (roomId, userName, callback) => {
         console.log("Emitting createRoom event with roomId:", roomId);
-        socket.emit('createRoom', { roomId }, (response) => {
+        socket.emit('createRoom', { roomId, userName }, (response) => {
             console.log('Received response for createRoom:', response);
             if (response.success) {
                 callback();
@@ -37,12 +37,12 @@ const useSocket = () => {
         });
     };
 
-    const joinRoom = (roomId, callback) => {
+    const joinRoom = (roomId, userName, callback) => {
         console.log("Join room event called")
-        socket.emit('joinRoom', { roomId }, (response) => {
+        socket.emit('joinRoom', { roomId, userName }, (response) => {
             console.log("Response of join room: ", response)
             if(response.success) {
-                
+                callback();
             } else {
                 console.error("Room join failed: ", response.message)
             }
@@ -53,7 +53,18 @@ const useSocket = () => {
         socket.emit('getRoomUsers', { roomId });
     }
 
-    return { createRoom, joinRoom, roomExists, getRoomUsers, roomUsers };
+    const leaveRoom = (roomId, callback) => {
+        console.log("Leaving room");
+        socket.emit('leaveRoom', { roomId }, (response) => {
+            if(response.success) {
+                callback();
+            } else {
+                console.log("Leave Room failed: ", response.message)
+            }
+        });
+    };
+
+    return { createRoom, joinRoom, roomExists, getRoomUsers, roomUsers, leaveRoom };
 };
 
 export default useSocket;

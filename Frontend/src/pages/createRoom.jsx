@@ -36,7 +36,7 @@ const CreateRoom = () => {
       return;
     }
     console.log("Inside create room")
-    createRoom(roomId, () => {
+    createRoom(roomId, userName, () => {
       console.log("Room created successfully, navigating to room page");
       navigate(`/room/${roomId}`);
     });
@@ -48,7 +48,7 @@ const CreateRoom = () => {
       return;
     }
 
-    joinRoom(roomId, () => {
+    joinRoom(roomId, userName, () => {
       navigate(`/room/${roomId}`);
     });
   };

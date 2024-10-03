@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from "mongoose";
+import Mongoose from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Room } from './../models/room.model.js';
@@ -143,11 +143,6 @@ const joinRoom = asyncHandler(async (req, res) => {
             new ApiResponse(200, updatedRoom, "Room joined successfully")
         );
 });
-
-
-
-
-
 
 export {
     createRoom,
